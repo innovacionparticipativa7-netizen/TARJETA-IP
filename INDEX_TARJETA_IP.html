@@ -792,91 +792,86 @@ async function importarExcelEmpleados(){
       const rows = XLSX.utils.sheet_to_json(hoja);
 
       if(rows.length === 0){
-        showAlert("msgImportar","error","El Excel está vacío o no tiene encabezados.");
+        showAlert("msgImportar","error","El Excel está vacío.");
         resetImportar();
         return;
       }
 
-      let batch = db.batch();
-      let batchCount = 0;
       let cargados = 0;
       let omitidos = 0;
+      const LOTE = 20;        // 20 empleados por batch
+      const PAUSA = 2000;     // 2 segundos entre lotes
 
-      setProgress(0,rows.length,0,0,"Importando empleados...");
+      setProgress(0, rows.length, 0, 0, `Iniciando... ${rows.length} empleados encontrados`);
 
-      for(let i=0;i<rows.length;i++){
-        const emp = rows[i];
+      for(let i = 0; i < rows.length; i += LOTE){
 
-        const control = normalizarCodigo(
-          emp.control ||
-          emp.Control ||
-          emp.CONTROL ||
-          emp.numeroEmpleado ||
-          emp["Número de empleado"] ||
-          emp["Numero de empleado"] ||
-          emp.empleado ||
-          ""
+        const grupo = rows.slice(i, i + LOTE);
+        const batch = db.batch();
+        let enEsteLote = 0;
+
+        for(const emp of grupo){
+
+          const control = normalizarCodigo(
+            emp.control || emp.Control || emp.CONTROL ||
+            emp.numeroEmpleado || emp["Número de empleado"] ||
+            emp["Numero de empleado"] || emp.empleado || ""
+          );
+
+          const nombre = String(
+            emp.nombre || emp.Nombre || emp.NOMBRE || ""
+          ).trim();
+
+          const area = String(
+            emp.area || emp.Area || emp.Área || emp.AREA || ""
+          ).trim();
+
+          if(!control || !nombre){
+            omitidos++;
+            continue;
+          }
+
+          batch.set(db.collection("usuarios").doc(control), {
+            control: control,
+            numeroEmpleado: control,
+            nombre: nombre,
+            area: area || "",
+            puntosActuales: 0,
+            puntosAcumulados: 0,
+            rol: "usuario",
+            actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+
+          enEsteLote++;
+          cargados++;
+        }
+
+        // Subir este lote
+        await batch.commit();
+
+        const pct = Math.round(((i + LOTE) / rows.length) * 100);
+        setProgress(
+          Math.min(pct, 100),
+          rows.length,
+          cargados,
+          omitidos,
+          `Lote ${Math.floor(i/LOTE)+1} de ${Math.ceil(rows.length/LOTE)} — ${cargados} cargados`
         );
 
-        const nombre = String(
-          emp.nombre ||
-          emp.Nombre ||
-          emp.NOMBRE ||
-          ""
-        ).trim();
-
-        const area = String(
-          emp.area ||
-          emp.Area ||
-          emp.Área ||
-          emp.AREA ||
-          ""
-        ).trim();
-
-        if(!control || !nombre || !area){
-          omitidos++;
-          continue;
+        // Pausa entre lotes para no saturar Firebase
+        if(i + LOTE < rows.length){
+          await new Promise(r => setTimeout(r, PAUSA));
         }
-
-        batch.set(db.collection("usuarios").doc(control),{
-          control: control,
-          numeroEmpleado: control,
-          nombre: nombre,
-          area: area,
-          puntosActuales: 0,
-          puntosAcumulados: 0,
-          rol: "usuario",
-          actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
-        },{merge:true});
-
-        batchCount++;
-        cargados++;
-
-        if(batchCount === 500){
-          await batch.commit();
-          batch = db.batch();
-          batchCount = 0;
-        }
-
-        const pct = Math.round(((i+1)/rows.length)*500);
-        setProgress(pct,rows.length,cargados,omitidos,`Procesando ${i+1} de ${rows.length}...`);
       }
 
-      if(batchCount > 0){
-        await batch.commit();
-      }
-
-      setProgress(100,rows.length,cargados,omitidos,"¡Importación completada!");
-
-      showAlert(
-        "msgImportar",
-        "success",
-        `Se cargaron ${cargados} empleados correctamente. Omitidos: ${omitidos}.`
+      setProgress(100, rows.length, cargados, omitidos, "¡Importación completada!");
+      showAlert("msgImportar", "success",
+        `✅ ${cargados} empleados cargados correctamente. Omitidos: ${omitidos}.`
       );
 
     }catch(error){
-      console.error("ERROR REAL IMPORTANDO:",error);
-      showAlert("msgImportar","error","Error: " + error.message);
+      console.error("Error importando:", error);
+      showAlert("msgImportar", "error", "Error: " + error.message);
     }finally{
       resetImportar();
     }
