@@ -196,7 +196,30 @@ textarea{
 
   <section id="adminPanel" class="card admin">
     <h1>Panel Admin</h1>
+<hr>
 
+<h3>Agregar empleado</h3>
+
+<div class="grid">
+  <div>
+    <label>Número de empleado</label>
+    <input id="adminNumeroEmpleado" placeholder="Ej. 1006">
+  </div>
+
+  <div>
+    <label>Nombre</label>
+    <input id="adminNombreEmpleado" placeholder="Nombre completo">
+  </div>
+
+  <div>
+    <label>Área</label>
+    <input id="adminAreaEmpleado" placeholder="Ej. OPEX">
+  </div>
+</div>
+
+<button class="btn btn-yellow" onclick="agregarEmpleado()">Guardar empleado</button>
+
+<div id="mensajeEmpleado" class="msg"></div>
     <h3>Correos de notificación</h3>
 
     <div class="email-row">
@@ -425,6 +448,35 @@ async function exportarExcel(){
 
 function mostrarMensaje(texto, color){
   const msg = document.getElementById("mensaje");
+  msg.textContent = texto;
+  msg.style.color = color;
+}
+async function agregarEmpleado(){
+  const numero = document.getElementById("adminNumeroEmpleado").value.trim();
+  const nombre = document.getElementById("adminNombreEmpleado").value.trim();
+  const area = document.getElementById("adminAreaEmpleado").value.trim();
+
+  if(!numero || !nombre || !area){
+    mostrarMensajeEmpleado("Completa número, nombre y área.", "red");
+    return;
+  }
+
+  await db.collection("empleados").doc(numero).set({
+    numeroEmpleado: numero,
+    nombre: nombre,
+    area: area,
+    actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  mostrarMensajeEmpleado("Empleado guardado correctamente.", "green");
+
+  document.getElementById("adminNumeroEmpleado").value = "";
+  document.getElementById("adminNombreEmpleado").value = "";
+  document.getElementById("adminAreaEmpleado").value = "";
+}
+
+function mostrarMensajeEmpleado(texto, color){
+  const msg = document.getElementById("mensajeEmpleado");
   msg.textContent = texto;
   msg.style.color = color;
 }
