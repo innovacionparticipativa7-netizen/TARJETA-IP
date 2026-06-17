@@ -9,7 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box}
 
@@ -293,7 +293,13 @@ textarea{
 </div>
 
 <button class="btn btn-yellow" onclick="agregarEmpleado()">Guardar empleado</button>
+<h3>Cargar empleados desde Excel</h3>
 
+<input type="file" id="excelEmpleados" accept=".xlsx,.xls">
+
+<button class="btn btn-yellow" onclick="importarExcelEmpleados()">
+📄 Importar Empleados
+</button>
 <div id="mensajeEmpleado" class="msg"></div>
     <h3>Correos de notificación</h3>
 
@@ -351,25 +357,31 @@ document.getElementById("fecha").value = new Date().toLocaleDateString("es-MX");
 ============================ */
 
 async function buscarEmpleado(){
-  const numero = document.getElementById("numeroEmpleado").value.trim();
+
+  const numero =
+    document.getElementById("numeroEmpleado")
+    .value.trim();
 
   if(!numero) return;
 
-  const doc = await db.collection("empleados").doc(numero).get();
+  const doc =
+    await db.collection("usuarios")
+    .doc(numero)
+    .get();
 
   if(!doc.exists){
-    mostrarMensaje("Empleado no encontrado.", "red");
-    document.getElementById("nombre").value = "";
-    document.getElementById("area").value = "";
+
+    alert("Empleado no encontrado");
     return;
   }
 
   const data = doc.data();
 
-  document.getElementById("nombre").value = data.nombre || "";
-  document.getElementById("area").value = data.area || "";
+  document.getElementById("nombre").value =
+    data.nombre || "";
 
-  mostrarMensaje("Datos encontrados correctamente.", "green");
+  document.getElementById("area").value =
+    data.area || "";
 }
 
 /* ============================
@@ -561,6 +573,59 @@ function mostrarMensajeEmpleado(texto, color){
 
 function cerrarModal(){
   document.getElementById("modalExito").style.display = "none";
+}
+async function importarExcelEmpleados() {
+
+  const archivo = document.getElementById("excelEmpleados").files[0];
+
+  if (!archivo) {
+    alert("Selecciona un archivo Excel");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = async function(e){
+
+    const data = new Uint8Array(e.target.result);
+
+    const workbook = XLSX.read(data,{
+      type:"array"
+    });
+
+    const hoja = workbook.Sheets[workbook.SheetNames[0]];
+
+    const empleados = XLSX.utils.sheet_to_json(hoja);
+
+    let cargados = 0;
+
+    for(const emp of empleados){
+
+      const control = String(emp.control || "").trim();
+
+      if(!control) continue;
+
+      await db.collection("usuarios").doc(control).set({
+
+        control: control,
+        nombre: emp.nombre || "",
+        area: emp.area || "",
+        puntosActuales: 0,
+        puntosAcumulados: 0,
+        rol: "usuario"
+
+      }, { merge:true });
+
+      cargados++;
+    }
+
+    alert(
+      "🎉 " + cargados +
+      " empleados cargados correctamente"
+    );
+  };
+
+  reader.readAsArrayBuffer(archivo);
 }
 </script>
 
