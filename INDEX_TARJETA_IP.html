@@ -271,7 +271,6 @@ input[type="file"] { padding: 9px 14px; cursor: pointer; color: var(--text2); }
 }
 .email-item span { flex: 1; font-size: 13px; color: var(--text); }
 .email-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 .modal-overlay {
   display: none;
   position: fixed;
@@ -398,9 +397,7 @@ input[type="file"] { padding: 9px 14px; cursor: pointer; color: var(--text2); }
 </div>
 </div>
  
-    <button class="btn btn-primary" id="btnEnviar" onclick="guardarIdea()">
-      Enviar idea
-</button>
+    <button class="btn btn-primary" id="btnEnviar" onclick="guardarIdea()">Enviar idea</button>
 <div id="mensajeIdea"></div>
 </div>
  
@@ -437,9 +434,7 @@ input[type="file"] { padding: 9px 14px; cursor: pointer; color: var(--text2); }
 </div>
 </div>
 <div style="margin-top:14px">
-<button class="btn btn-success" id="btnGuardarEmp" onclick="agregarEmpleado()">
-            + Guardar empleado
-</button>
+<button class="btn btn-success" id="btnGuardarEmp" onclick="agregarEmpleado()">+ Guardar empleado</button>
 </div>
 <div id="msgAgregarEmp"></div>
 </div>
@@ -447,15 +442,24 @@ input[type="file"] { padding: 9px 14px; cursor: pointer; color: var(--text2); }
       <div class="card">
 <div class="card-title">Importar desde Excel</div>
 <div class="section-desc" style="margin-bottom:16px; font-size:13px">
-          El archivo debe tener columnas: <strong style="color:var(--text)">control</strong>, <strong style="color:var(--text)">nombre</strong>, <strong style="color:var(--text)">area</strong> (o sus variantes en mayúsculas).
+          El archivo debe tener columnas: <strong style="color:var(--text)">control</strong>, <strong style="color:var(--text)">nombre</strong>, <strong style="color:var(--text)">area</strong>. Descarga la plantilla si no tienes el formato correcto.
 </div>
-<input type="file" id="excelEmpleados" accept=".xlsx,.xls">
-<div style="margin-top:14px">
+ 
+        <div style="margin-bottom:16px">
+<button class="btn btn-ghost" onclick="descargarPlantilla()" style="font-size:13px; gap:6px">
+            ⬇ Descargar plantilla Excel
+</button>
+</div>
+ 
+        <input type="file" id="excelEmpleados" accept=".xlsx,.xls">
+ 
+        <div style="margin-top:14px">
 <button class="btn btn-success" id="btnImportar" onclick="importarExcelEmpleados()">
             📄 Iniciar importación
 </button>
 </div>
-<div id="importProgress" class="hidden" style="margin-top:20px">
+ 
+        <div id="importProgress" class="hidden" style="margin-top:20px">
 <div class="progress-wrap">
 <div class="progress-label">
 <span id="progressText">Procesando...</span>
@@ -465,7 +469,7 @@ input[type="file"] { padding: 9px 14px; cursor: pointer; color: var(--text2); }
 <div class="progress-fill" id="progressFill"></div>
 </div>
 </div>
-<div class="stats-row" id="importStats" style="margin-top:14px">
+<div class="stats-row" style="margin-top:14px">
 <div class="stat">
 <div class="stat-num yellow" id="statTotal">0</div>
 <div class="stat-label">En archivo</div>
@@ -681,6 +685,19 @@ async function agregarEmpleado() {
   }
 }
  
+function descargarPlantilla() {
+  const datos = [
+    { control: "1001", nombre: "Juan Pérez García", area: "OPEX" },
+    { control: "1002", nombre: "María López Soto", area: "Calidad" },
+    { control: "1003", nombre: "Carlos Ramírez Luna", area: "Producción" }
+  ];
+  const ws = XLSX.utils.json_to_sheet(datos);
+  ws["!cols"] = [{ wch: 12 }, { wch: 30 }, { wch: 20 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Empleados");
+  XLSX.writeFile(wb, "Plantilla_Empleados_IP.xlsx");
+}
+ 
 async function importarExcelEmpleados() {
   const archivo = document.getElementById("excelEmpleados").files[0];
   if(!archivo) {
@@ -704,7 +721,6 @@ async function importarExcelEmpleados() {
         resetImportar();
         return;
       }
-      document.getElementById("statTotal").textContent = rows.length;
       setProgress(0, rows.length, 0, 0, "Importando empleados...");
       let batch = db.batch();
       let batchCount = 0;
