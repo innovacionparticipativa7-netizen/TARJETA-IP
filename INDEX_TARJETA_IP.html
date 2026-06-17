@@ -539,29 +539,42 @@ function mostrarMensaje(texto, color){
   msg.style.color = color;
 }
 async function agregarEmpleado(){
-  const numero = document.getElementById("adminNumeroEmpleado").value.trim();
-  const nombre = document.getElementById("adminNombreEmpleado").value.trim();
-  const area = document.getElementById("adminAreaEmpleado").value.trim();
+  try {
+    const numero = String(document.getElementById("adminNumeroEmpleado").value || "")
+      .trim()
+      .replace(/\D/g, "")
+      .replace(/^0+/, "");
 
-  if(!numero || !nombre || !area){
-    mostrarMensajeEmpleado("Completa número, nombre y área.", "red");
-    return;
+    const nombre = document.getElementById("adminNombreEmpleado").value.trim();
+    const area = document.getElementById("adminAreaEmpleado").value.trim();
+
+    if(!numero || !nombre || !area){
+      mostrarMensajeEmpleado("Completa número, nombre y área.", "red");
+      return;
+    }
+
+    await db.collection("usuarios").doc(numero).set({
+      control: numero,
+      numeroEmpleado: numero,
+      nombre: nombre,
+      area: area,
+      puntosActuales: 0,
+      puntosAcumulados: 0,
+      rol: "usuario",
+      actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    mostrarMensajeEmpleado("✅ Empleado guardado correctamente.", "green");
+
+    document.getElementById("adminNumeroEmpleado").value = "";
+    document.getElementById("adminNombreEmpleado").value = "";
+    document.getElementById("adminAreaEmpleado").value = "";
+
+  } catch(error) {
+    console.error("ERROR AGREGANDO EMPLEADO:", error);
+    mostrarMensajeEmpleado("❌ Error al guardar empleado. Revisa permisos de Firestore.", "red");
   }
-
-  await db.collection("empleados").doc(numero).set({
-    numeroEmpleado: numero,
-    nombre: nombre,
-    area: area,
-    actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
-  mostrarMensajeEmpleado("Empleado guardado correctamente.", "green");
-
-  document.getElementById("adminNumeroEmpleado").value = "";
-  document.getElementById("adminNombreEmpleado").value = "";
-  document.getElementById("adminAreaEmpleado").value = "";
 }
-
 function mostrarMensajeEmpleado(texto, color){
   const msg = document.getElementById("mensajeEmpleado");
   msg.textContent = texto;
@@ -574,59 +587,114 @@ function mostrarMensajeEmpleado(texto, color){
 function cerrarModal(){
   document.getElementById("modalExito").style.display = "none";
 }
-async function importarExcelEmpleados() {
 
+
+
+
+  async function importarExcelEmpleados() {
   const archivo = document.getElementById("excelEmpleados").files[0];
 
   if (!archivo) {
-    alert("Selecciona un archivo Excel");
+    mostrarMensajeEmpleado("Selecciona un archivo Excel.", "red");
     return;
   }
 
+  mostrarMensajeEmpleado("Leyendo Excel, espera...", "#2563eb");
+
   const reader = new FileReader();
 
-  reader.onload = async function(e){
+  reader.onload = async function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const hoja = workbook.Sheets[workbook.SheetNames[0]];
+      const empleados = XLSX.utils.sheet_to_json(hoja);
 
-    const data = new Uint8Array(e.target.result);
+      if (empleados.length === 0) {
+        mostrarMensajeEmpleado("El Excel está vacío o no tiene encabezados.", "red");
+        return;
+      }
 
-    const workbook = XLSX.read(data,{
-      type:"array"
-    });
+      let batch = db.batch();
+      let contadorBatch = 0;
+      let cargados = 0;
+      let omitidos = 0;
 
-    const hoja = workbook.Sheets[workbook.SheetNames[0]];
+      for (const emp of empleados) {
+        const control = String(
+          emp.control ||
+          emp.Control ||
+          emp.numeroEmpleado ||
+          emp["Número de empleado"] ||
+          emp["Numero de empleado"] ||
+          emp.empleado ||
+          ""
+        ).trim().replace(/\D/g, "").replace(/^0+/, "");
 
-    const empleados = XLSX.utils.sheet_to_json(hoja);
+        const nombre = String(
+          emp.nombre ||
+          emp.Nombre ||
+          emp.NOMBRE ||
+          ""
+        ).trim();
 
-    let cargados = 0;
+        const area = String(
+          emp.area ||
+          emp.Area ||
+          emp.Área ||
+          emp.AREA ||
+          ""
+        ).trim();
 
-    for(const emp of empleados){
+        if (!control || !nombre || !area) {
+          omitidos++;
+          continue;
+        }
 
-      const control = String(emp.control || "").trim();
+        const ref = db.collection("usuarios").doc(control);
 
-      if(!control) continue;
+        batch.set(ref, {
+          control: control,
+          nombre: nombre,
+          area: area,
+          puntosActuales: 0,
+          puntosAcumulados: 0,
+          rol: "usuario",
+          actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
 
-      await db.collection("usuarios").doc(control).set({
+        contadorBatch++;
+        cargados++;
 
-        control: control,
-        nombre: emp.nombre || "",
-        area: emp.area || "",
-        puntosActuales: 0,
-        puntosAcumulados: 0,
-        rol: "usuario"
+        if (contadorBatch === 450) {
+          await batch.commit();
+          mostrarMensajeEmpleado("Cargando empleados... " + cargados, "#2563eb");
+          batch = db.batch();
+          contadorBatch = 0;
+        }
+      }
 
-      }, { merge:true });
+      if (contadorBatch > 0) {
+        await batch.commit();
+      }
 
-      cargados++;
+      mostrarMensajeEmpleado(
+        "🎉 Empleados cargados correctamente: " + cargados + 
+        " | Omitidos: " + omitidos,
+        "green"
+      );
+
+      alert("🎉 " + cargados + " empleados cargados correctamente");
+
+    } catch (error) {
+      console.error("ERROR IMPORTANDO EXCEL:", error);
+      mostrarMensajeEmpleado("Error al importar Excel. Revisa permisos o encabezados.", "red");
     }
-
-    alert(
-      "🎉 " + cargados +
-      " empleados cargados correctamente"
-    );
   };
 
   reader.readAsArrayBuffer(archivo);
 }
+
 </script>
 
 </body>
