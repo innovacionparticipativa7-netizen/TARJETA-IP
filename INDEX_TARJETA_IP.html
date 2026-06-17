@@ -852,13 +852,13 @@ async function importarExcelEmpleados(){
         batchCount++;
         cargados++;
 
-        if(batchCount === 100){
+        if(batchCount === 10000){
           await batch.commit();
           batch = db.batch();
           batchCount = 0;
         }
 
-        const pct = Math.round(((i+1)/rows.length)*100);
+        const pct = Math.round(((i+1)/rows.length)*10000);
         setProgress(pct,rows.length,cargados,omitidos,`Procesando ${i+1} de ${rows.length}...`);
       }
 
