@@ -2,307 +2,530 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Innovación Participativa | Nueva Idea</title>
+<title>Innovación Participativa</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
- 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
- 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}
- 
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0d0d0d;
-  color:#fff;
+:root {
+  --yellow: #FFE135;
+  --yellow-dark: #E6C800;
+  --black: #0A0A0A;
+  --dark: #141414;
+  --surface: #1C1C1C;
+  --surface2: #242424;
+  --border: #2E2E2E;
+  --border2: #3A3A3A;
+  --text: #F0F0F0;
+  --text2: #909090;
+  --text3: #606060;
+  --green: #22C55E;
+  --green-bg: #0F2A1A;
+  --red: #EF4444;
+  --red-bg: #2A0F0F;
+  --blue: #3B82F6;
+  --blue-bg: #0F1A2A;
+  --radius: 12px;
+  --radius-sm: 8px;
 }
- 
-header{
-  background:#2b2b2b;
-  padding:18px 30px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  border-bottom:1px solid #444;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--black);
+  color: var(--text);
+  min-height: 100vh;
 }
- 
-.logo{
-  font-size:22px;
-  font-weight:bold;
-  letter-spacing:1px;
+header {
+  background: var(--dark);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
- 
-.logo span{
-  color:#ffe95c;
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: .5px;
 }
- 
-nav button{
-  background:#ffe95c;
-  color:#111;
-  border:none;
-  border-radius:20px;
-  padding:10px 18px;
-  cursor:pointer;
-  font-weight:bold;
+.logo-badge {
+  background: var(--yellow);
+  color: var(--black);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
- 
-.container{
-  max-width:1150px;
-  margin:35px auto;
-  padding:0 20px;
+.logo-sub {
+  color: var(--text2);
+  font-weight: 400;
+  font-size: 13px;
 }
- 
-.card{
-  background:#f7f7f7;
-  color:#111;
-  border-radius:8px;
-  padding:35px;
-  margin-bottom:30px;
+.btn-admin {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: 'Inter', sans-serif;
 }
- 
-.card h1{
-  margin-top:0;
-  font-size:32px;
+.btn-admin:hover {
+  color: var(--text);
+  border-color: var(--text2);
+  background: var(--surface);
 }
- 
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:20px;
+.page {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
 }
- 
-label{
-  font-weight:bold;
-  display:block;
-  margin-bottom:6px;
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 32px;
 }
- 
-input, textarea{
-  width:100%;
-  padding:13px;
-  border:1px solid #ccc;
-  border-radius:6px;
-  font-size:15px;
+.tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all .2s;
+  font-family: 'Inter', sans-serif;
 }
- 
-textarea{
-  min-height:120px;
-  resize:vertical;
+.tab.active {
+  background: var(--surface2);
+  color: var(--text);
 }
- 
-.readonly{
-  background:#eee;
+.section-header { margin-bottom: 28px; }
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
 }
- 
-.btn{
-  background:#111;
-  color:#fff;
-  border:none;
-  padding:13px 22px;
-  border-radius:25px;
-  cursor:pointer;
-  font-weight:bold;
-  margin-top:15px;
+.section-desc {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.5;
 }
- 
-.btn-yellow{
-  background:#ffe95c;
-  color:#111;
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
 }
- 
-.admin{
-  display:none;
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 18px;
 }
- 
-.email-row{
-  display:flex;
-  gap:10px;
-  margin-bottom:10px;
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
- 
-.email-row input{
-  flex:1;
+.field { display: flex; flex-direction: column; gap: 7px; }
+.field.full { grid-column: 1 / -1; }
+label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .6px;
 }
- 
-.delete{
-  background:#c62828;
-  color:#fff;
+input, textarea, select {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  transition: border-color .2s;
+  outline: none;
+  width: 100%;
 }
- 
-.msg{
-  margin-top:15px;
-  font-weight:bold;
+input:focus, textarea:focus { border-color: var(--yellow); }
+input[readonly] { color: var(--text2); cursor: default; }
+textarea { min-height: 110px; resize: vertical; line-height: 1.6; }
+input[type="file"] { padding: 9px 14px; cursor: pointer; color: var(--text2); }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  transition: all .15s;
 }
- 
-@media(max-width:800px){
-  .grid{grid-template-columns:1fr}
+.btn-primary {
+  background: var(--yellow);
+  color: var(--black);
+  width: 100%;
+  justify-content: center;
+  padding: 14px;
+  font-size: 15px;
+  border-radius: var(--radius);
+  margin-top: 4px;
 }
- 
-.modal{
-  display:none;
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,.75);
-  z-index:9999;
-  justify-content:center;
-  align-items:center;
+.btn-primary:hover { background: var(--yellow-dark); }
+.btn-primary:active { transform: scale(.99); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border2);
 }
- 
-.modal.active{
-  display:flex;
+.btn-ghost:hover {
+  color: var(--text);
+  border-color: var(--text2);
+  background: var(--surface2);
 }
- 
-.modal-content{
-  background:white;
-  width:90%;
-  max-width:500px;
-  padding:35px;
-  border-radius:20px;
-  text-align:center;
-  animation:pop .4s ease;
+.btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid #3A1515; }
+.btn-danger:hover { background: #3A1515; }
+.btn-success { background: var(--green-bg); color: var(--green); border: 1px solid #0F3A1A; }
+.btn-success:hover { background: #0F3A1A; }
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 14px;
 }
- 
-.modal-content h2{
-  color:#16a34a;
-  margin-bottom:15px;
-  font-size:32px;
+.alert-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.alert-error   { background: var(--red-bg);  color: #FCA5A5; border: 1px solid #3A1515; }
+.alert-success { background: var(--green-bg); color: #86EFAC; border: 1px solid #0F3A1A; }
+.alert-info    { background: var(--blue-bg);  color: #93C5FD; border: 1px solid #0F1A3A; }
+.alert-warning { background: #2A1F0F; color: #FCD34D; border: 1px solid #3A2A0F; }
+.progress-wrap { margin-top: 16px; }
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 6px;
 }
- 
-.modal-content p{
-  color:#334155;
-  line-height:1.6;
+.progress-bar { height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.progress-fill {
+  height: 100%;
+  background: var(--yellow);
+  border-radius: 99px;
+  transition: width .3s ease;
+  width: 0%;
 }
- 
-.modal-content button{
-  margin-top:20px;
-  background:#FFD54F;
-  color:#111;
-  border:none;
-  padding:12px 30px;
-  border-radius:30px;
-  cursor:pointer;
-  font-weight:700;
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
 }
- 
-.emoji{
-  font-size:50px;
-  margin-bottom:15px;
+.stat { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px 16px; text-align: center; }
+.stat-num { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .6px; }
+.stat-num.green { color: var(--green); }
+.stat-num.red   { color: var(--red); }
+.stat-num.yellow { color: var(--yellow); }
+.email-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
 }
- 
-@keyframes pop{
-  from{transform:scale(.7);opacity:0}
-  to{transform:scale(1);opacity:1}
+.email-item span { flex: 1; font-size: 13px; color: var(--text); }
+.email-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.8);
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.active { display: flex; }
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 44px 36px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  animation: pop .35s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-icon { font-size: 52px; margin-bottom: 16px; }
+.modal-title { font-size: 24px; font-weight: 700; color: var(--green); margin-bottom: 12px; }
+.modal-body { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 24px; }
+.modal-body strong { color: var(--text); }
+.modal-close {
+  background: var(--yellow);
+  color: var(--black);
+  border: none;
+  padding: 12px 32px;
+  border-radius: 99px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0,0,0,.3);
+  border-top-color: var(--black);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pop {
+  from { transform: scale(.8); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+.employee-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-top: 8px;
+}
+.employee-found { background: var(--green-bg); color: #86EFAC; border: 1px solid #0F3A1A; }
+.employee-not-found { background: var(--red-bg); color: #FCA5A5; border: 1px solid #3A1515; }
+.hidden { display: none !important; }
+@media(max-width: 600px) {
+  .field-grid { grid-template-columns: 1fr; }
+  .stats-row  { grid-template-columns: 1fr 1fr; }
+  header { padding: 0 16px; }
+  .page  { padding: 24px 16px 60px; }
 }
 </style>
 </head>
- 
 <body>
  
 <header>
-<div class="logo">UNSECTION <span>| INNOVACIÓN PARTICIPATIVA</span></div>
-<nav>
-<button onclick="toggleAdmin()">Admin</button>
-</nav>
+<div class="logo">
+<span class="logo-badge">IP</span>
+<span>Innovación Participativa</span>
+<span class="logo-sub">— UNSECTION</span>
+</div>
+<button class="btn-admin" onclick="abrirAdmin()">⚙ Administrador</button>
 </header>
  
-<div class="container">
+<div class="page">
  
-  <section class="card">
-<h1>Nueva Idea IP</h1>
-<p>Ingresa tu número de empleado para llenar automáticamente tus datos.</p>
- 
-    <div class="grid">
-<div>
-<label>Número de empleado</label>
-<input id="numeroEmpleado" onblur="buscarEmpleado()" placeholder="Ej. 1006">
+  <div id="vistaEmpleado">
+<div class="section-header">
+<div class="section-title">Registrar nueva idea</div>
+<div class="section-desc">Ingresa tu número de empleado y completa los campos para enviar tu propuesta al equipo IP.</div>
 </div>
-<div>
+ 
+    <div class="card">
+<div class="card-title">Datos del empleado</div>
+<div class="field-grid">
+<div class="field">
+<label>Número de empleado</label>
+<input id="numeroEmpleado" type="text" placeholder="Ej. 1006" autocomplete="off"
+            oninput="resetEmpleado()" onblur="buscarEmpleado()">
+<div id="empleadoStatus" class="hidden"></div>
+</div>
+<div class="field">
 <label>Fecha</label>
-<input id="fecha" class="readonly" readonly>
+<input id="fecha" readonly>
 </div>
-<div>
+<div class="field">
 <label>Nombre</label>
-<input id="nombre" class="readonly" readonly>
+<input id="nombre" readonly placeholder="Se llena automáticamente">
 </div>
-<div>
+<div class="field">
 <label>Área</label>
-<input id="area" class="readonly" readonly>
+<input id="area" readonly placeholder="Se llena automáticamente">
+</div>
+</div>
+</div>
+ 
+    <div class="card">
+<div class="card-title">Descripción de la idea</div>
+<div class="field full" style="margin-bottom:16px">
+<label>Observación / Área de oportunidad</label>
+<textarea id="observacion" placeholder="Describe el problema o la oportunidad que detectaste..."></textarea>
+</div>
+<div class="field full">
+<label>Idea propuesta / Solución</label>
+<textarea id="idea" placeholder="Describe cómo resolverías el problema o aprovecharías la oportunidad..."></textarea>
 </div>
 </div>
  
-    <br>
+    <button class="btn btn-primary" id="btnEnviar" onclick="guardarIdea()">
+      Enviar idea
+</button>
+<div id="mensajeIdea"></div>
+</div>
  
-    <label>Observación / Área de oportunidad</label>
-<textarea id="observacion" placeholder="Describe el problema u oportunidad detectada..."></textarea>
- 
-    <br><br>
- 
-    <label>Idea propuesta / Solución</label>
-<textarea id="idea" placeholder="Describe la solución propuesta..."></textarea>
- 
-    <button class="btn btn-yellow" onclick="guardarIdea()">Enviar idea</button>
-<div id="mensaje" class="msg"></div>
-</section>
- 
-  <section id="adminPanel" class="card admin">
-<h1>Panel Admin</h1>
-<hr>
- 
-    <h3>Agregar empleado</h3>
-<div class="grid">
+  <div id="vistaAdmin" class="hidden">
+<div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-start">
 <div>
+<div class="section-title">Panel de administración</div>
+<div class="section-desc">Gestiona empleados, correos y exporta registros.</div>
+</div>
+<button class="btn btn-ghost" style="font-size:13px" onclick="cerrarAdmin()">← Salir</button>
+</div>
+ 
+    <div class="tabs">
+<button class="tab active" onclick="showTab('tabEmpleados', this)">Empleados</button>
+<button class="tab" onclick="showTab('tabCorreos', this)">Notificaciones</button>
+<button class="tab" onclick="showTab('tabExportar', this)">Exportar</button>
+</div>
+ 
+    <div id="tabEmpleados">
+<div class="card">
+<div class="card-title">Agregar empleado</div>
+<div class="field-grid">
+<div class="field">
 <label>Número de empleado</label>
-<input id="adminNumeroEmpleado" placeholder="Ej. 1006">
+<input id="adminNum" placeholder="Ej. 1006">
 </div>
-<div>
-<label>Nombre</label>
-<input id="adminNombreEmpleado" placeholder="Nombre completo">
-</div>
-<div>
+<div class="field">
 <label>Área</label>
-<input id="adminAreaEmpleado" placeholder="Ej. OPEX">
+<input id="adminArea" placeholder="Ej. OPEX">
+</div>
+<div class="field full">
+<label>Nombre completo</label>
+<input id="adminNombre" placeholder="Nombre y apellidos">
 </div>
 </div>
-<button class="btn btn-yellow" onclick="agregarEmpleado()">Guardar empleado</button>
+<div style="margin-top:14px">
+<button class="btn btn-success" id="btnGuardarEmp" onclick="agregarEmpleado()">
+            + Guardar empleado
+</button>
+</div>
+<div id="msgAgregarEmp"></div>
+</div>
  
-    <h3>Cargar empleados desde Excel</h3>
+      <div class="card">
+<div class="card-title">Importar desde Excel</div>
+<div class="section-desc" style="margin-bottom:16px; font-size:13px">
+          El archivo debe tener columnas: <strong style="color:var(--text)">control</strong>, <strong style="color:var(--text)">nombre</strong>, <strong style="color:var(--text)">area</strong> (o sus variantes en mayúsculas).
+</div>
 <input type="file" id="excelEmpleados" accept=".xlsx,.xls">
-<button class="btn btn-yellow" onclick="importarExcelEmpleados()">📄 Importar Empleados</button>
- 
-    <div id="mensajeEmpleado" class="msg"></div>
- 
-    <h3>Correos de notificación</h3>
-<div class="email-row">
-<input id="nuevoCorreo" placeholder="correo@safran-group.com">
-<button class="btn btn-yellow" onclick="agregarCorreo()">Agregar</button>
+<div style="margin-top:14px">
+<button class="btn btn-success" id="btnImportar" onclick="importarExcelEmpleados()">
+            📄 Iniciar importación
+</button>
 </div>
-<div id="listaCorreos"></div>
+<div id="importProgress" class="hidden" style="margin-top:20px">
+<div class="progress-wrap">
+<div class="progress-label">
+<span id="progressText">Procesando...</span>
+<span id="progressPct">0%</span>
+</div>
+<div class="progress-bar">
+<div class="progress-fill" id="progressFill"></div>
+</div>
+</div>
+<div class="stats-row" id="importStats" style="margin-top:14px">
+<div class="stat">
+<div class="stat-num yellow" id="statTotal">0</div>
+<div class="stat-label">En archivo</div>
+</div>
+<div class="stat">
+<div class="stat-num green" id="statCargados">0</div>
+<div class="stat-label">Cargados</div>
+</div>
+<div class="stat">
+<div class="stat-num red" id="statOmitidos">0</div>
+<div class="stat-label">Omitidos</div>
+</div>
+</div>
+</div>
+<div id="msgImportar"></div>
+</div>
+</div>
  
-    <hr>
+    <div id="tabCorreos" class="hidden">
+<div class="card">
+<div class="card-title">Correos de notificación</div>
+<div class="section-desc" style="font-size:13px; margin-bottom:18px">
+          Cuando se registre una idea, se enviará una notificación a estas direcciones.
+</div>
+<div style="display:flex; gap:10px; margin-bottom:18px">
+<input id="nuevoCorreo" type="email" placeholder="correo@empresa.com" style="flex:1">
+<button class="btn btn-success" onclick="agregarCorreo()" style="flex-shrink:0">Agregar</button>
+</div>
+<div id="listaCorreos">
+<div style="font-size:13px; color:var(--text3); padding:12px 0">Cargando correos...</div>
+</div>
+<div id="msgCorreos"></div>
+</div>
+</div>
  
-    <h3>Exportar registro de ideas</h3>
-<button class="btn" onclick="exportarExcel()">Descargar Excel actualizado</button>
-</section>
+    <div id="tabExportar" class="hidden">
+<div class="card">
+<div class="card-title">Exportar registro de ideas</div>
+<div class="section-desc" style="font-size:13px; margin-bottom:20px">
+          Descarga todas las ideas registradas en un archivo Excel ordenadas por fecha.
+</div>
+<button class="btn btn-primary" id="btnExportar" onclick="exportarExcel()" style="max-width:280px">
+          ⬇ Descargar Excel
+</button>
+<div id="msgExportar"></div>
+</div>
+</div>
+</div>
  
 </div>
  
-<div id="modalExito" class="modal">
-<div class="modal-content">
-<div class="emoji">🎉🎈🏆🎈🎉</div>
-<h2>¡Idea Registrada!</h2>
-<p>
-      Gracias por participar en <b>Innovación Participativa</b>.
-<br><br>
-      Tu idea ha sido registrada exitosamente y será revisada por el equipo IP.
-</p>
-<h3>🚀 ¡Atrévete a innovar!</h3>
-<button onclick="cerrarModal()">Aceptar</button>
+<div id="modalExito" class="modal-overlay">
+<div class="modal-box">
+<div class="modal-icon">🏆</div>
+<div class="modal-title">¡Idea registrada!</div>
+<div class="modal-body">
+      Tu propuesta ha sido enviada exitosamente al equipo de <strong>Innovación Participativa</strong>.<br><br>
+      Será revisada y recibirás retroalimentación próximamente.
+</div>
+<button class="modal-close" onclick="cerrarModal()">Entendido</button>
 </div>
 </div>
  
@@ -315,268 +538,336 @@ const firebaseConfig = {
   messagingSenderId: "290616524935",
   appId: "1:290616524935:web:27e33ccb3d7823a6ce3822"
 };
- 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
- 
-emailjs.init("TU_PUBLIC_KEY_EMAILJS");
-const SERVICE_ID  = "TU_SERVICE_ID";
-const TEMPLATE_ID = "TU_TEMPLATE_ID";
  
 const ADMIN_PASSWORD = "admin123";
  
 document.getElementById("fecha").value = new Date().toLocaleDateString("es-MX");
  
-async function buscarEmpleado(){
+function showTab(id, btn) {
+  ["tabEmpleados","tabCorreos","tabExportar"].forEach(t => {
+    document.getElementById(t).classList.add("hidden");
+  });
+  document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+  document.getElementById(id).classList.remove("hidden");
+  btn.classList.add("active");
+  if(id === "tabCorreos") cargarCorreos();
+}
+ 
+function abrirAdmin() {
+  const clave = prompt("Contraseña de administrador:");
+  if(clave === null) return;
+  if(clave !== ADMIN_PASSWORD) {
+    showAlert("mensajeIdea", "error", "Contraseña incorrecta.");
+    return;
+  }
+  document.getElementById("vistaEmpleado").classList.add("hidden");
+  document.getElementById("vistaAdmin").classList.remove("hidden");
+}
+ 
+function cerrarAdmin() {
+  document.getElementById("vistaAdmin").classList.add("hidden");
+  document.getElementById("vistaEmpleado").classList.remove("hidden");
+}
+ 
+function resetEmpleado() {
+  document.getElementById("nombre").value = "";
+  document.getElementById("area").value = "";
+  document.getElementById("empleadoStatus").className = "hidden";
+}
+ 
+async function buscarEmpleado() {
   const numero = document.getElementById("numeroEmpleado").value.trim();
   if(!numero) return;
- 
+  const statusEl = document.getElementById("empleadoStatus");
+  statusEl.className = "employee-status employee-found";
+  statusEl.innerHTML = '<div class="spinner" style="border-top-color:#86EFAC"></div> Buscando...';
+  statusEl.classList.remove("hidden");
   try {
-    const doc = await db.collection("usuarios").doc(numero).get();
-    if(!doc.exists){
-      alert("Empleado no encontrado");
+    const snap = await db.collection("usuarios").doc(numero).get();
+    if(!snap.exists) {
+      statusEl.className = "employee-status employee-not-found";
+      statusEl.innerHTML = "✗ Número de empleado no encontrado";
       document.getElementById("nombre").value = "";
-      document.getElementById("area").value   = "";
+      document.getElementById("area").value = "";
       return;
     }
-    const data = doc.data();
-    document.getElementById("nombre").value = data.nombre || "";
-    document.getElementById("area").value   = data.area   || "";
+    const d = snap.data();
+    document.getElementById("nombre").value = d.nombre || "";
+    document.getElementById("area").value   = d.area   || "";
+    statusEl.className = "employee-status employee-found";
+    statusEl.innerHTML = "✓ Empleado verificado";
   } catch(e) {
-    console.error("Error buscando empleado:", e);
-    alert("Error al buscar empleado. Revisa la conexión.");
+    statusEl.className = "employee-status employee-not-found";
+    statusEl.innerHTML = "✗ Error de conexión. Intenta de nuevo.";
   }
 }
  
-async function guardarIdea(){
+async function guardarIdea() {
   const numeroEmpleado = document.getElementById("numeroEmpleado").value.trim();
   const nombre         = document.getElementById("nombre").value.trim();
   const area           = document.getElementById("area").value.trim();
   const fecha          = document.getElementById("fecha").value;
   const observacion    = document.getElementById("observacion").value.trim();
   const idea           = document.getElementById("idea").value.trim();
- 
-  if(!numeroEmpleado || !nombre || !area || !observacion || !idea){
-    mostrarMensaje("Completa todos los campos antes de enviar.", "red");
+  clearAlert("mensajeIdea");
+  if(!numeroEmpleado || !nombre || !area) {
+    showAlert("mensajeIdea", "error", "Ingresa tu número de empleado y espera a que se verifique.");
     return;
   }
- 
-  const nuevaIdea = {
-    numeroEmpleado,
-    nombre,
-    area,
-    fecha,
-    observacion,
-    idea,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
- 
+  if(!observacion) {
+    showAlert("mensajeIdea", "error", "Describe la observación o área de oportunidad.");
+    return;
+  }
+  if(!idea) {
+    showAlert("mensajeIdea", "error", "Describe tu idea o solución propuesta.");
+    return;
+  }
+  const btn = document.getElementById("btnEnviar");
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Guardando...';
   try {
-    await db.collection("ideas_ip").add(nuevaIdea);
-    mostrarExito();
-    enviarCorreos(nuevaIdea).catch(e => console.warn("Error enviando correos:", e));
-    mostrarMensaje("Idea registrada correctamente.", "green");
+    await db.collection("ideas_ip").add({
+      numeroEmpleado, nombre, area, fecha, observacion, idea,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    mostrarModal();
     document.getElementById("numeroEmpleado").value = "";
-    document.getElementById("nombre").value          = "";
-    document.getElementById("area").value            = "";
-    document.getElementById("observacion").value     = "";
-    document.getElementById("idea").value            = "";
+    document.getElementById("nombre").value = "";
+    document.getElementById("area").value = "";
+    document.getElementById("observacion").value = "";
+    document.getElementById("idea").value = "";
+    document.getElementById("empleadoStatus").className = "hidden";
+    clearAlert("mensajeIdea");
   } catch(e) {
-    console.error("Error guardando idea:", e);
-    mostrarMensaje("Error al guardar. Revisa permisos de Firestore.", "red");
+    showAlert("mensajeIdea", "error", "Error al guardar la idea. Revisa tu conexión o los permisos de Firestore.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "Enviar idea";
   }
 }
  
-async function enviarCorreos(ideaData){
-  const snapshot = await db.collection("correos_notificacion").get();
-  const correos  = [];
-  snapshot.forEach(doc => correos.push(doc.data().correo));
-  for(const correo of correos){
-    await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-      to_email:        correo,
-      numero_empleado: ideaData.numeroEmpleado,
-      nombre:          ideaData.nombre,
-      area:            ideaData.area,
-      fecha:           ideaData.fecha,
-      observacion:     ideaData.observacion,
-      idea:            ideaData.idea
-    });
-  }
-}
+function mostrarModal() { document.getElementById("modalExito").classList.add("active"); }
+function cerrarModal()  { document.getElementById("modalExito").classList.remove("active"); }
  
-function mostrarExito(){
-  document.getElementById("modalExito").classList.add("active");
-}
- 
-function cerrarModal(){
-  document.getElementById("modalExito").classList.remove("active");
-}
- 
-function toggleAdmin(){
-  const panel = document.getElementById("adminPanel");
-  if(panel.style.display === "block"){
-    panel.style.display = "none";
+async function agregarEmpleado() {
+  const numero = String(document.getElementById("adminNum").value || "")
+    .trim().replace(/\D/g,"").replace(/^0+/,"");
+  const nombre = document.getElementById("adminNombre").value.trim();
+  const area   = document.getElementById("adminArea").value.trim();
+  if(!numero || !nombre || !area) {
+    showAlert("msgAgregarEmp", "error", "Completa los tres campos: número, nombre y área.");
     return;
   }
-  const clave = prompt("Ingresa la contraseña de administrador:");
-  if(clave === null) return;
-  if(clave !== ADMIN_PASSWORD){
-    alert("Contraseña incorrecta.");
-    return;
-  }
-  panel.style.display = "block";
-  cargarCorreos();
-}
- 
-async function agregarCorreo(){
-  const correo = document.getElementById("nuevoCorreo").value.trim();
-  if(!correo){ alert("Agrega un correo válido."); return; }
-  await db.collection("correos_notificacion").add({ correo });
-  document.getElementById("nuevoCorreo").value = "";
-  cargarCorreos();
-}
- 
-async function cargarCorreos(){
-  const lista = document.getElementById("listaCorreos");
-  lista.innerHTML = "";
-  const snapshot = await db.collection("correos_notificacion").get();
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    const div  = document.createElement("div");
-    div.className = "email-row";
-    div.innerHTML = `
-<input value="${data.correo}" readonly>
-<button class="btn delete" onclick="eliminarCorreo('${doc.id}')">Eliminar</button>
-    `;
-    lista.appendChild(div);
-  });
-}
- 
-async function eliminarCorreo(id){
-  await db.collection("correos_notificacion").doc(id).delete();
-  cargarCorreos();
-}
- 
-async function exportarExcel(){
-  const snapshot = await db.collection("ideas_ip").orderBy("createdAt", "desc").get();
-  const data = [];
-  snapshot.forEach(doc => {
-    const idea = doc.data();
-    data.push({
-      "Fecha":                             idea.fecha,
-      "Número de empleado":                idea.numeroEmpleado,
-      "Nombre":                            idea.nombre,
-      "Área":                              idea.area,
-      "Observación / Área de oportunidad": idea.observacion,
-      "Idea propuesta / Solución":         idea.idea
-    });
-  });
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Ideas IP");
-  XLSX.writeFile(wb, "Registro_Ideas_IP.xlsx");
-}
- 
-async function agregarEmpleado(){
+  const btn = document.getElementById("btnGuardarEmp");
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="border-top-color:#86EFAC"></div> Guardando...';
   try {
-    const numero = String(document.getElementById("adminNumeroEmpleado").value || "")
-      .trim().replace(/\D/g, "").replace(/^0+/, "");
-    const nombre = document.getElementById("adminNombreEmpleado").value.trim();
-    const area   = document.getElementById("adminAreaEmpleado").value.trim();
-    if(!numero || !nombre || !area){
-      mostrarMensajeEmpleado("Completa número, nombre y área.", "red");
-      return;
-    }
     await db.collection("usuarios").doc(numero).set({
-      control:          numero,
-      numeroEmpleado:   numero,
-      nombre:           nombre,
-      area:             area,
-      puntosActuales:   0,
-      puntosAcumulados: 0,
-      rol:              "usuario",
-      actualizadoEn:    firebase.firestore.FieldValue.serverTimestamp()
+      control: numero, numeroEmpleado: numero, nombre, area,
+      puntosActuales: 0, puntosAcumulados: 0, rol: "usuario",
+      actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
-    mostrarMensajeEmpleado("✅ Empleado guardado correctamente.", "green");
-    document.getElementById("adminNumeroEmpleado").value = "";
-    document.getElementById("adminNombreEmpleado").value = "";
-    document.getElementById("adminAreaEmpleado").value   = "";
-  } catch(error) {
-    console.error("ERROR AGREGANDO EMPLEADO:", error);
-    mostrarMensajeEmpleado("❌ Error al guardar empleado. Revisa permisos de Firestore.", "red");
+    showAlert("msgAgregarEmp", "success", `Empleado ${nombre} guardado correctamente.`);
+    document.getElementById("adminNum").value = "";
+    document.getElementById("adminNombre").value = "";
+    document.getElementById("adminArea").value = "";
+  } catch(e) {
+    showAlert("msgAgregarEmp", "error", "Error al guardar. Revisa los permisos de Firestore.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "+ Guardar empleado";
   }
 }
  
-async function importarExcelEmpleados(){
+async function importarExcelEmpleados() {
   const archivo = document.getElementById("excelEmpleados").files[0];
-  if(!archivo){ mostrarMensajeEmpleado("Selecciona un archivo Excel.", "red"); return; }
-  mostrarMensajeEmpleado("Leyendo Excel, espera...", "#2563eb");
+  if(!archivo) {
+    showAlert("msgImportar", "warning", "Selecciona un archivo Excel primero.");
+    return;
+  }
+  const btn = document.getElementById("btnImportar");
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="border-top-color:#86EFAC"></div> Leyendo archivo...';
+  document.getElementById("importProgress").classList.remove("hidden");
+  clearAlert("msgImportar");
+  setProgress(0, 0, 0, 0, "Leyendo archivo...");
   const reader = new FileReader();
-  reader.onload = async function(e){
+  reader.onload = async function(e) {
     try {
-      const data      = new Uint8Array(e.target.result);
-      const workbook  = XLSX.read(data, { type: "array" });
-      const hoja      = workbook.Sheets[workbook.SheetNames[0]];
-      const empleados = XLSX.utils.sheet_to_json(hoja);
-      if(empleados.length === 0){
-        mostrarMensajeEmpleado("El Excel está vacío o no tiene encabezados.", "red");
+      const wb   = XLSX.read(new Uint8Array(e.target.result), { type:"array" });
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws);
+      if(rows.length === 0) {
+        showAlert("msgImportar", "error", "El archivo está vacío o no tiene encabezados reconocibles.");
+        resetImportar();
         return;
       }
+      document.getElementById("statTotal").textContent = rows.length;
+      setProgress(0, rows.length, 0, 0, "Importando empleados...");
       let batch = db.batch();
-      let contadorBatch = 0;
+      let batchCount = 0;
       let cargados = 0;
       let omitidos = 0;
-      for(const emp of empleados){
+      for(let i = 0; i < rows.length; i++) {
+        const emp = rows[i];
         const control = String(
           emp.control || emp.Control || emp.numeroEmpleado ||
           emp["Número de empleado"] || emp["Numero de empleado"] ||
-          emp.empleado || ""
-        ).trim().replace(/\D/g, "").replace(/^0+/, "");
+          emp.empleado || emp.CONTROL || ""
+        ).trim().replace(/\D/g,"").replace(/^0+/,"");
         const nombre = String(emp.nombre || emp.Nombre || emp.NOMBRE || "").trim();
         const area   = String(emp.area || emp.Area || emp.Área || emp.AREA || "").trim();
-        if(!control || !nombre || !area){ omitidos++; continue; }
-        const ref = db.collection("usuarios").doc(control);
-        batch.set(ref, {
-          control:          control,
-          nombre:           nombre,
-          area:             area,
-          puntosActuales:   0,
-          puntosAcumulados: 0,
-          rol:              "usuario",
-          actualizadoEn:    firebase.firestore.FieldValue.serverTimestamp()
+        if(!control || !nombre || !area) { omitidos++; continue; }
+        batch.set(db.collection("usuarios").doc(control), {
+          control, nombre, area,
+          puntosActuales: 0, puntosAcumulados: 0, rol: "usuario",
+          actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-        contadorBatch++;
+        batchCount++;
         cargados++;
-        if(contadorBatch === 450){
+        if(batchCount === 450) {
           await batch.commit();
-          mostrarMensajeEmpleado("Cargando empleados... " + cargados, "#2563eb");
           batch = db.batch();
-          contadorBatch = 0;
+          batchCount = 0;
         }
+        const pct = Math.round(((i+1) / rows.length) * 100);
+        setProgress(pct, rows.length, cargados, omitidos, `Procesando ${i+1} de ${rows.length}...`);
       }
-      if(contadorBatch > 0) await batch.commit();
-      mostrarMensajeEmpleado("🎉 Empleados cargados: " + cargados + " | Omitidos: " + omitidos, "green");
-      alert("🎉 " + cargados + " empleados cargados correctamente");
-    } catch(error) {
-      console.error("ERROR IMPORTANDO EXCEL:", error);
-      mostrarMensajeEmpleado("Error al importar Excel. Revisa permisos o encabezados.", "red");
+      if(batchCount > 0) await batch.commit();
+      setProgress(100, rows.length, cargados, omitidos, "¡Importación completada!");
+      showAlert("msgImportar", "success",
+        `${cargados} empleado${cargados!==1?"s":""} importado${cargados!==1?"s":""} correctamente.` +
+        (omitidos > 0 ? ` ${omitidos} fila${omitidos!==1?"s":""} omitida${omitidos!==1?"s":""} por datos incompletos.` : "")
+      );
+    } catch(err) {
+      console.error(err);
+      showAlert("msgImportar", "error", "Error al procesar el archivo. Verifica que sea un .xlsx válido.");
+      document.getElementById("importProgress").classList.add("hidden");
+    } finally {
+      resetImportar();
     }
   };
   reader.readAsArrayBuffer(archivo);
 }
  
-function mostrarMensaje(texto, color){
-  const msg = document.getElementById("mensaje");
-  msg.textContent = texto;
-  msg.style.color = color;
+function setProgress(pct, total, cargados, omitidos, texto) {
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressPct").textContent  = pct + "%";
+  document.getElementById("progressText").textContent = texto;
+  document.getElementById("statTotal").textContent    = total;
+  document.getElementById("statCargados").textContent = cargados;
+  document.getElementById("statOmitidos").textContent = omitidos;
 }
  
-function mostrarMensajeEmpleado(texto, color){
-  const msg = document.getElementById("mensajeEmpleado");
-  msg.textContent = texto;
-  msg.style.color = color;
+function resetImportar() {
+  const btn = document.getElementById("btnImportar");
+  btn.disabled = false;
+  btn.innerHTML = "📄 Iniciar importación";
+}
+ 
+async function agregarCorreo() {
+  const correo = document.getElementById("nuevoCorreo").value.trim();
+  if(!correo || !correo.includes("@")) {
+    showAlert("msgCorreos", "warning", "Ingresa una dirección de correo válida.");
+    return;
+  }
+  try {
+    await db.collection("correos_notificacion").add({ correo });
+    document.getElementById("nuevoCorreo").value = "";
+    cargarCorreos();
+    showAlert("msgCorreos", "success", "Correo agregado.");
+    setTimeout(() => clearAlert("msgCorreos"), 3000);
+  } catch(e) {
+    showAlert("msgCorreos", "error", "Error al guardar el correo.");
+  }
+}
+ 
+async function cargarCorreos() {
+  const lista = document.getElementById("listaCorreos");
+  lista.innerHTML = '<div style="font-size:13px; color:var(--text3); padding:8px 0">Cargando...</div>';
+  try {
+    const snap = await db.collection("correos_notificacion").get();
+    if(snap.empty) {
+      lista.innerHTML = '<div style="font-size:13px; color:var(--text3); padding:8px 0">No hay correos registrados.</div>';
+      return;
+    }
+    lista.innerHTML = "";
+    snap.forEach(doc => {
+      const div = document.createElement("div");
+      div.className = "email-item";
+      div.innerHTML = `
+<div class="email-dot"></div>
+<span>${doc.data().correo}</span>
+<button class="btn btn-danger" style="padding:6px 12px; font-size:12px"
+          onclick="eliminarCorreo('${doc.id}')">Eliminar</button>
+      `;
+      lista.appendChild(div);
+    });
+  } catch(e) {
+    lista.innerHTML = '<div style="font-size:13px; color:var(--red)">Error al cargar correos.</div>';
+  }
+}
+ 
+async function eliminarCorreo(id) {
+  if(!confirm("¿Eliminar este correo de la lista?")) return;
+  try {
+    await db.collection("correos_notificacion").doc(id).delete();
+    cargarCorreos();
+  } catch(e) {
+    showAlert("msgCorreos", "error", "Error al eliminar.");
+  }
+}
+ 
+async function exportarExcel() {
+  const btn = document.getElementById("btnExportar");
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Generando...';
+  clearAlert("msgExportar");
+  try {
+    const snap = await db.collection("ideas_ip").orderBy("createdAt","desc").get();
+    if(snap.empty) {
+      showAlert("msgExportar", "warning", "No hay ideas registradas para exportar.");
+      return;
+    }
+    const data = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      data.push({
+        "Fecha": d.fecha,
+        "No. Empleado": d.numeroEmpleado,
+        "Nombre": d.nombre,
+        "Área": d.area,
+        "Observación / Área de oportunidad": d.observacion,
+        "Idea propuesta / Solución": d.idea
+      });
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Ideas IP");
+    XLSX.writeFile(wb, `Ideas_IP_${new Date().toLocaleDateString("es-MX").replace(/\//g,"-")}.xlsx`);
+    showAlert("msgExportar", "success", `${data.length} idea${data.length!==1?"s":""} exportada${data.length!==1?"s":""}.`);
+  } catch(e) {
+    showAlert("msgExportar", "error", "Error al exportar. Revisa los permisos de Firestore.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "⬇ Descargar Excel";
+  }
+}
+ 
+function showAlert(containerId, type, msg) {
+  const icons = { error:"✕", success:"✓", warning:"⚠", info:"ℹ" };
+  document.getElementById(containerId).innerHTML = `
+<div class="alert alert-${type}">
+<span class="alert-icon">${icons[type]}</span>
+<span>${msg}</span>
+</div>`;
+}
+ 
+function clearAlert(containerId) {
+  document.getElementById(containerId).innerHTML = "";
 }
 </script>
- 
 </body>
 </html>
