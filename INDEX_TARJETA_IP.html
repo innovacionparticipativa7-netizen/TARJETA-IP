@@ -139,6 +139,66 @@ textarea{
 @media(max-width:800px){
   .grid{grid-template-columns:1fr}
 }
+.modal{
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,.75);
+  z-index:9999;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-content{
+  background:white;
+  width:90%;
+  max-width:500px;
+  padding:35px;
+  border-radius:20px;
+  text-align:center;
+  animation:pop .4s ease;
+}
+
+.modal-content h2{
+  color:#16a34a;
+  margin-bottom:15px;
+  font-size:32px;
+}
+
+.modal-content p{
+  color:#334155;
+  line-height:1.6;
+}
+
+.modal-content button{
+  margin-top:20px;
+  background:#FFD54F;
+  color:#111;
+  border:none;
+  padding:12px 30px;
+  border-radius:30px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+.emoji{
+  font-size:50px;
+  margin-bottom:15px;
+}
+
+@keyframes pop{
+  from{
+    transform:scale(.7);
+    opacity:0;
+  }
+  to{
+    transform:scale(1);
+    opacity:1;
+  }
+}
 </style>
 </head>
 
@@ -190,7 +250,22 @@ textarea{
     <textarea id="idea" placeholder="Describe la solución propuesta..."></textarea>
 
     <button class="btn btn-yellow" onclick="guardarIdea()">Enviar idea</button>
+<!-- MODAL FELICITACION -->
+<div id="modalExito" class="modal">
+  <div class="modal-content">
+    <div class="emoji">🎉🎈🏆🎈🎉</div>
+    <h2>¡Idea Registrada!</h2>
+    <p>
+      Gracias por participar en <b>Innovación Participativa</b>.
+      <br><br>
+      Tu idea ha sido registrada exitosamente y será revisada por el equipo IP.
+    </p>
 
+    <h3>🚀 ¡Atrévete a innovar!</h3>
+
+    <button onclick="cerrarModal()">Aceptar</button>
+  </div>
+</div>
     <div id="mensaje" class="msg"></div>
   </section>
 
@@ -325,7 +400,7 @@ async function guardarIdea(){
   };
 
   await db.collection("ideas_ip").add(nuevaIdea);
-
+mostrarExito();
   await enviarCorreos(nuevaIdea);
 
   mostrarMensaje("Idea registrada correctamente.", "green");
@@ -479,6 +554,13 @@ function mostrarMensajeEmpleado(texto, color){
   const msg = document.getElementById("mensajeEmpleado");
   msg.textContent = texto;
   msg.style.color = color;
+}
+  function mostrarExito(){
+  document.getElementById("modalExito").style.display = "flex";
+}
+
+function cerrarModal(){
+  document.getElementById("modalExito").style.display = "none";
 }
 </script>
 
